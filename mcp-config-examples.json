@@ -1,0 +1,101 @@
+{
+  "description": "Sensor Tower MCP Server 配置示例",
+  "examples": {
+    "cursor": {
+      "description": "Cursor IDE 配置",
+      "config": {
+        "mcpServers": {
+          "sensortower": {
+            "command": "python",
+            "args": ["-m", "sensortower_mcp.server"],
+            "env": {
+              "SENSOR_TOWER_API_TOKEN": "st_your_primary_token_here",
+              "SENSOR_TOWER_API_TOKEN_BACKUP": "st_your_backup_token_here"
+            }
+          }
+        }
+      }
+    },
+    "claude_desktop": {
+      "description": "Claude Desktop 配置",
+      "config": {
+        "mcpServers": {
+          "sensortower": {
+            "command": "python",
+            "args": ["-m", "sensortower_mcp.server"],
+            "env": {
+              "SENSOR_TOWER_API_TOKEN": "st_your_primary_token_here",
+              "SENSOR_TOWER_API_TOKEN_BACKUP": "st_your_backup_token_here"
+            }
+          }
+        }
+      }
+    },
+    "kiro": {
+      "description": "Kiro IDE 配置",
+      "config": {
+        "mcpServers": {
+          "sensortower": {
+            "command": "python",
+            "args": ["-m", "sensortower_mcp.server"],
+            "env": {
+              "SENSOR_TOWER_API_TOKEN": "st_your_primary_token_here",
+              "SENSOR_TOWER_API_TOKEN_BACKUP": "st_your_backup_token_here"
+            }
+          }
+        }
+      }
+    },
+    "with_py_launcher": {
+      "description": "使用 Python Launcher (Windows)",
+      "config": {
+        "mcpServers": {
+          "sensortower": {
+            "command": "py",
+            "args": ["-3.13", "-m", "sensortower_mcp.server"],
+            "env": {
+              "SENSOR_TOWER_API_TOKEN": "st_your_primary_token_here",
+              "SENSOR_TOWER_API_TOKEN_BACKUP": "st_your_backup_token_here"
+            }
+          }
+        }
+      }
+    },
+    "http_mode": {
+      "description": "HTTP 服务器模式",
+      "config": {
+        "mcpServers": {
+          "sensortower": {
+            "command": "python",
+            "args": ["-m", "sensortower_mcp.server", "--transport", "http", "--port", "8666"],
+            "env": {
+              "SENSOR_TOWER_API_TOKEN": "st_your_primary_token_here",
+              "SENSOR_TOWER_API_TOKEN_BACKUP": "st_your_backup_token_here"
+            }
+          }
+        }
+      }
+    },
+    "single_token": {
+      "description": "仅使用单个 Token（不推荐）",
+      "config": {
+        "mcpServers": {
+          "sensortower": {
+            "command": "python",
+            "args": ["-m", "sensortower_mcp.server"],
+            "env": {
+              "SENSOR_TOWER_API_TOKEN": "st_your_primary_token_here"
+            }
+          }
+        }
+      }
+    }
+  },
+  "notes": [
+    "将 st_your_primary_token_here 替换为你的主 API Token",
+    "将 st_your_backup_token_here 替换为你的备用 API Token",
+    "备用 Token 是可选的，但强烈推荐配置以确保服务高可用",
+    "从 https://app.sensortower.com/users/edit/api-settings 获取 API Token",
+    "不要将包含真实 Token 的配置文件提交到版本控制系统"
+  ]
+}
