@@ -11,7 +11,7 @@ from starlette.responses import JSONResponse
 
 from .config import (
     parse_args, validate_token, create_http_client, 
-    print_startup_info, print_token_error, get_auth_token
+    print_startup_info, print_token_error, get_auth_token, get_auth_tokens
 )
 from .tools import (
     AppAnalysisTools, StoreMarketingTools, MarketAnalysisTools,
@@ -35,33 +35,44 @@ class SensorTowerMCPServer:
         )
         self.client = None
         self.tools_registered = False
+        self.tokens = []
         
     def setup_client(self):
-        """Initialize HTTP client and validate token"""
-        if not validate_token(self.args.token):
+        """Initialize HTTP client and validate tokens"""
+        try:
+            self.tokens = get_auth_tokens(self.args.token, self.args.backup_token)
+        except ValueError:
+            print_token_error()
+            sys.exit(1)
+        
+        if not self.tokens:
             print_token_error()
             sys.exit(1)
             
-        token = get_auth_token(self.args.token)
-        self.client = create_http_client(token)
+        # Use primary token for client creation
+        primary_token = self.tokens[0]
+        self.client = create_http_client(primary_token)
         
         # Set global client for backward compatibility
         global sensor_tower_client
         sensor_tower_client = self.client
         
-        return token
+        return self.tokens
     
-    def register_all_tools(self, token: str):
+    def register_all_tools(self, tokens: list):
         """Register all MCP tools and resources"""
         if self.tools_registered:
             return
+        
+        primary_token = tokens[0]
+        backup_tokens = tokens[1:] if len(tokens) > 1 else []
             
-        # Initialize all tool classes
-        app_analysis = AppAnalysisTools(self.client, token)
-        store_marketing = StoreMarketingTools(self.client, token)
-        market_analysis = MarketAnalysisTools(self.client, token)
-        your_metrics = YourMetricsTools(self.client, token)
-        search_discovery = SearchDiscoveryTools(self.client, token)
+        # Initialize all tool classes with primary and backup tokens
+        app_analysis = AppAnalysisTools(self.client, primary_token, backup_tokens)
+        store_marketing = StoreMarketingTools(self.client, primary_token, backup_tokens)
+        market_analysis = MarketAnalysisTools(self.client, primary_token, backup_tokens)
+        your_metrics = YourMetricsTools(self.client, primary_token, backup_tokens)
+        search_discovery = SearchDiscoveryTools(self.client, primary_token, backup_tokens)
         utilities = UtilityTools()
         
         # Register tools with FastMCP
@@ -206,11 +217,11 @@ class SensorTowerMCPServer:
     async def run_async(self):
         """Run server in async mode"""
         # Setup client and register tools
-        token = self.setup_client()
-        self.register_all_tools(token)
+        tokens = self.setup_client()
+        self.register_all_tools(tokens)
         
         # Display startup information
-        print_startup_info(self.args, 40)
+        print_startup_info(self.args, 40, len(tokens))
         
         try:
             if self.args.transport == "stdio":
@@ -236,11 +247,11 @@ class SensorTowerMCPServer:
     def run_sync(self):
         """Run server in sync mode"""
         # Setup client and register tools
-        token = self.setup_client()
-        self.register_all_tools(token)
+        tokens = self.setup_client()
+        self.register_all_tools(tokens)
         
         # Display startup information
-        print_startup_info(self.args, 40)
+        print_startup_info(self.args, 40, len(tokens))
         
         try:
             if self.args.transport == "stdio":

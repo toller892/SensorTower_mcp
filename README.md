@@ -11,6 +11,7 @@ An MCP server that lets agents use Sensor Tower APIs for ads, market, and utilit
 ## Requirements
 - Python 3.10+
 - Sensor Tower API token (`SENSOR_TOWER_API_TOKEN` environment variable)
+- (Optional) Backup API token (`SENSOR_TOWER_API_TOKEN_BACKUP` for automatic failover)
 - (Optional) Docker for container-based deployment
 
 ## Quick Start
@@ -18,9 +19,11 @@ An MCP server that lets agents use Sensor Tower APIs for ads, market, and utilit
    ```bash
    uv sync  # or: pip install -e .[test]
    ```
-2. Export your API token:
+2. Export your API token(s):
    ```bash
    export SENSOR_TOWER_API_TOKEN="st_xxxxxxxxx"
+   # Optional: Add backup token for automatic failover
+   export SENSOR_TOWER_API_TOKEN_BACKUP="st_yyyyyyyyy"
    ```
 3. Launch the MCP server:
    ```bash
@@ -28,13 +31,23 @@ An MCP server that lets agents use Sensor Tower APIs for ads, market, and utilit
    ```
    The FastMCP CLI will expose the registered tools to your orchestrator.
 
+## Automatic Token Failover
+The server supports automatic failover to a backup API token when the primary token's quota is exhausted:
+
+- Set `SENSOR_TOWER_API_TOKEN_BACKUP` environment variable with your backup token
+- When the primary token hits rate limits (429) or quota errors (403), the server automatically switches to the backup token
+- The switch is logged with: `⚠️  Switching to backup token #2`
+- All subsequent requests will use the backup token until server restart
+
+This ensures uninterrupted service even when one API key reaches its quota limit.
+
 ## Client setup (Cursor, Claude, Docker)
 
 ### Cursor
 - Settings → MCP → Add Server → Command:
   - Command: `python`
   - Arguments: `-m sensortower_mcp.server`
-  - Env: set `SENSOR_TOWER_API_TOKEN`
+  - Env: set `SENSOR_TOWER_API_TOKEN` (and optionally `SENSOR_TOWER_API_TOKEN_BACKUP`)
 
 Example JSON (if Cursor asks for a block):
 ```json
@@ -42,7 +55,10 @@ Example JSON (if Cursor asks for a block):
   "name": "sensortower",
   "command": "python",
   "args": ["-m", "sensortower_mcp.server"],
-  "env": { "SENSOR_TOWER_API_TOKEN": "st_xxxxxxxxx" }
+  "env": { 
+    "SENSOR_TOWER_API_TOKEN": "st_xxxxxxxxx",
+    "SENSOR_TOWER_API_TOKEN_BACKUP": "st_yyyyyyyyy"
+  }
 }
 ```
 
@@ -57,7 +73,10 @@ Minimal config snippet some clients accept:
     "sensortower": {
       "command": "python",
       "args": ["-m", "sensortower_mcp.server"],
-      "env": { "SENSOR_TOWER_API_TOKEN": "st_xxxxxxxxx" }
+      "env": { 
+        "SENSOR_TOWER_API_TOKEN": "st_xxxxxxxxx",
+        "SENSOR_TOWER_API_TOKEN_BACKUP": "st_yyyyyyyyy"
+      }
     }
   }
 }
@@ -69,6 +88,7 @@ Build and run the server container locally:
 docker build -t sensortower-mcp .
 docker run --rm \
   -e SENSOR_TOWER_API_TOKEN=st_xxxxxxxxx \
+  -e SENSOR_TOWER_API_TOKEN_BACKUP=st_yyyyyyyyy \
   -p 8666:8666 \
   sensortower-mcp
 ```

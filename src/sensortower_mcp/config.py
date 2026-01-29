@@ -6,7 +6,7 @@ Configuration and setup for Sensor Tower MCP Server
 import argparse
 import os
 import httpx
-from typing import Optional
+from typing import List, Optional
 
 # Try to load .env file if available
 try:
@@ -36,12 +36,36 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--token",
         default=os.getenv("SENSOR_TOWER_API_TOKEN"),
-        help="Sensor Tower API token"
+        help="Primary Sensor Tower API token"
+    )
+    parser.add_argument(
+        "--backup-token",
+        default=os.getenv("SENSOR_TOWER_API_TOKEN_BACKUP"),
+        help="Backup Sensor Tower API token"
     )
     return parser.parse_args()
 
+def get_auth_tokens(primary_token: Optional[str] = None, backup_token: Optional[str] = None) -> List[str]:
+    """Get list of authentication tokens (primary and backup)"""
+    tokens = []
+    
+    # Get primary token
+    primary = primary_token or os.getenv("SENSOR_TOWER_API_TOKEN")
+    if primary:
+        tokens.append(primary)
+    
+    # Get backup token
+    backup = backup_token or os.getenv("SENSOR_TOWER_API_TOKEN_BACKUP")
+    if backup:
+        tokens.append(backup)
+    
+    if not tokens:
+        raise ValueError("At least SENSOR_TOWER_API_TOKEN environment variable or --token argument is required")
+    
+    return tokens
+
 def get_auth_token(token: Optional[str] = None) -> str:
-    """Get authentication token for Sensor Tower API"""
+    """Get primary authentication token for Sensor Tower API (backward compatibility)"""
     auth_token = token or os.getenv("SENSOR_TOWER_API_TOKEN")
     if not auth_token:
         raise ValueError("SENSOR_TOWER_API_TOKEN environment variable or --token argument is required")
@@ -62,7 +86,7 @@ def validate_token(token: Optional[str] = None) -> bool:
     except ValueError:
         return False
 
-def print_startup_info(args: argparse.Namespace, tool_count: int = 40):
+def print_startup_info(args: argparse.Namespace, tool_count: int = 40, token_count: int = 1):
     """Print startup information"""
     print("🚀 Starting Sensor Tower MCP Server (FastMCP)")
     print(f"📡 API Base URL: {API_BASE_URL}")
@@ -70,8 +94,10 @@ def print_startup_info(args: argparse.Namespace, tool_count: int = 40):
     if args.transport == "http":
         print(f"🌐 Port: {args.port}")
     print(f"🔧 Available tools: {tool_count}")
+    print(f"🔑 API Tokens configured: {token_count} (Primary" + (" + Backup)" if token_count > 1 else " only)"))
 
 def print_token_error():
     """Print error message for missing token"""
     print("❌ Error: SENSOR_TOWER_API_TOKEN environment variable or --token argument is required")
     print("🔑 Get your API token from: https://app.sensortower.com/users/edit/api-settings")
+    print("💡 Tip: Set SENSOR_TOWER_API_TOKEN_BACKUP for automatic failover")

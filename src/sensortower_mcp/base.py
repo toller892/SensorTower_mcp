@@ -70,19 +70,31 @@ def build_decorator_meta(
 class SensorTowerTool:
     """Base class for Sensor Tower API tools"""
     
-    def __init__(self, client: httpx.AsyncClient, token: str):
+    def __init__(self, client: httpx.AsyncClient, token: str, backup_tokens: list = None):
         self.client = client
         self.token = token
+        self.backup_tokens = backup_tokens or []
+        self.current_token_index = 0  # Track which token we're using
+        self.all_tokens = [token] + self.backup_tokens
     
     def get_auth_token(self) -> str:
-        """Get authentication token"""
-        return self.token
+        """Get current authentication token"""
+        return self.all_tokens[self.current_token_index]
+    
+    def switch_to_backup_token(self) -> bool:
+        """Switch to next available backup token. Returns True if switched, False if no more tokens."""
+        if self.current_token_index < len(self.all_tokens) - 1:
+            self.current_token_index += 1
+            print(f"⚠️  Switching to backup token #{self.current_token_index + 1}")
+            return True
+        return False
     
     async def make_request(self, endpoint: str, params: Dict[str, Any]) -> Any:
-        """Make authenticated request to Sensor Tower API with retries and backoff."""
+        """Make authenticated request to Sensor Tower API with retries and token failover."""
         params["auth_token"] = self.get_auth_token()
         backoff_seconds = 0.5
         max_attempts = 5
+        
         for attempt_index in range(max_attempts):
             try:
                 response = await self.client.get(endpoint, params=params)
@@ -90,6 +102,25 @@ class SensorTowerTool:
                 return response.json()
             except httpx.HTTPStatusError as status_error:
                 status_code = status_error.response.status_code
+                
+                # Check if it's a quota/rate limit error (429 or 403 with quota message)
+                is_quota_error = status_code == 429
+                if status_code == 403:
+                    try:
+                        error_body = status_error.response.json()
+                        error_message = str(error_body).lower()
+                        is_quota_error = any(keyword in error_message for keyword in 
+                                           ['quota', 'limit', 'exceeded', 'rate'])
+                    except:
+                        pass
+                
+                # If quota error and we have backup tokens, try switching
+                if is_quota_error and self.switch_to_backup_token():
+                    params["auth_token"] = self.get_auth_token()
+                    print(f"🔄 Retrying request with backup token...")
+                    continue
+                
+                # For other retryable errors, use backoff
                 if status_code in {429, 500, 502, 503, 504} and attempt_index < (max_attempts - 1):
                     await asyncio.sleep(backoff_seconds)
                     backoff_seconds = min(backoff_seconds * 2.0, 8.0)
