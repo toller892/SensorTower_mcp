@@ -37,8 +37,9 @@ def _format_missing_docs(info_name: str, doc: str) -> str:
 
 
 def test_expected_tool_count():
-    # SensorTower MCP currently exposes 43 tools across all modules.
-    assert len(TOOL_INFOS) == 43, "Unexpected number of registered tools"
+    # SensorTower MCP currently exposes 32 tools across all modules.
+    # Reduced from 43 after removing 11 deprecated/redundant tools.
+    assert len(TOOL_INFOS) == 32, "Unexpected number of registered tools"
 
 
 @pytest.mark.parametrize("info", TOOL_INFOS, ids=lambda i: i.name)
