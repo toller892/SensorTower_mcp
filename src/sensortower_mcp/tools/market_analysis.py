@@ -273,7 +273,12 @@ class MarketAnalysisTools(SensorTowerTool):
                 Field(description="Comma-separated country codes", default=None),
             ] = None,
         ) -> dict:
-            """Retrieve aggregated download and revenue estimates of game categories."""
+            """Retrieve aggregated download and revenue estimates of game categories.
+
+            ⚠️ UNOFFICIAL API: This endpoint is not documented in the official Sensor Tower
+            API documentation. While it currently works, it may be deprecated or changed
+            without notice. Use with caution and consider migrating to official alternatives.
+            """
 
             os_value = validate_os_parameter(os, ["ios", "android"])
             start_value = validate_date_format(start_date)
