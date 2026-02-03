@@ -110,7 +110,10 @@ class StoreMarketingTools(SensorTowerTool):
                 Field(description="End date in YYYY-MM-DD format", default=None),
             ] = None,
         ) -> dict:
-            """Retrieve featured creatives and their positions over time."""
+            """Retrieve featured creatives and their positions over time.
+
+            Note: app_id is required. The API will return 422 if not provided.
+            """
 
             os_value = validate_os_parameter(os, ["ios", "android"])
             params = {"app_id": app_id}
