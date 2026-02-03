@@ -164,10 +164,10 @@ class SensorTowerMCPServer:
             from .config import API_BASE_URL
             return JSONResponse({
                 "status": "healthy",
-                "service": "Sensor Tower MCP Server", 
+                "service": "Sensor Tower MCP Server",
                 "transport": self.args.transport,
                 "api_base_url": API_BASE_URL,
-                "tools_available": 40
+                "tools_available": 29
             })
 
     def add_json_tool_endpoint(self):
@@ -221,7 +221,7 @@ class SensorTowerMCPServer:
         self.register_all_tools(tokens)
         
         # Display startup information
-        print_startup_info(self.args, 40, len(tokens))
+        print_startup_info(self.args, 29, len(tokens))
         
         try:
             if self.args.transport == "stdio":
@@ -251,7 +251,7 @@ class SensorTowerMCPServer:
         self.register_all_tools(tokens)
         
         # Display startup information
-        print_startup_info(self.args, 40, len(tokens))
+        print_startup_info(self.args, 29, len(tokens))
         
         try:
             if self.args.transport == "stdio":
