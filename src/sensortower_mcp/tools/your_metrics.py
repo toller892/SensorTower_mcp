@@ -64,24 +64,16 @@ class YourMetricsTools(SensorTowerTool):
             title="Unified Sales Reports",
         )
         async def unified_sales_reports(
+            unified_app_ids: Annotated[
+                str,
+                Field(description="Comma-separated unified app IDs", min_length=1),
+            ],
             start_date: Annotated[str, Field(description="Start date in YYYY-MM-DD format")],
             end_date: Annotated[str, Field(description="End date in YYYY-MM-DD format")],
             date_granularity: Annotated[
                 Literal["daily", "weekly", "monthly", "quarterly"],
                 Field(description="Granularity for aggregation"),
             ],
-            unified_app_ids: Annotated[
-                Optional[str],
-                Field(description="Comma-separated unified app IDs", default=None),
-            ] = None,
-            itunes_app_ids: Annotated[
-                Optional[str],
-                Field(description="Comma-separated iTunes app IDs", default=None),
-            ] = None,
-            android_app_ids: Annotated[
-                Optional[str],
-                Field(description="Comma-separated Android app IDs", default=None),
-            ] = None,
             countries: Annotated[
                 Optional[str],
                 Field(description="Comma-separated country codes", default=None),
@@ -90,25 +82,11 @@ class YourMetricsTools(SensorTowerTool):
             """Get unified downloads and revenue sales report for connected apps."""
 
             params = {
+                "unified_app_ids": unified_app_ids,
                 "date_granularity": date_granularity,
                 "start_date": validate_date_format(start_date),
                 "end_date": validate_date_format(end_date),
             }
-
-            app_id_params = {
-                "unified_app_ids": unified_app_ids,
-                "itunes_app_ids": itunes_app_ids,
-                "android_app_ids": android_app_ids,
-            }
-
-            if not any(value for value in app_id_params.values()):
-                raise ToolError(
-                    "Provide at least one of unified_app_ids, itunes_app_ids, or android_app_ids",
-                )
-
-            for key, value in app_id_params.items():
-                if value:
-                    params[key] = value
 
             if countries:
                 params["countries"] = countries
