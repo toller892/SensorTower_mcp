@@ -19,50 +19,6 @@ class SearchDiscoveryTools(SensorTowerTool):
 
         @self.tool(
             mcp,
-            name="search_entities",
-            title="Search Entities",
-        )
-        async def search_entities(
-            os: Annotated[
-                Literal["ios", "android", "both_stores", "unified"],
-                Field(description="Platform scope"),
-            ],
-            entity_type: Annotated[
-                Literal["app", "publisher"],
-                Field(description="Type of entity to search"),
-            ],
-            term: Annotated[
-                str,
-                Field(description="Search term"),
-            ],
-            limit: Annotated[
-                int,
-                Field(description="Maximum results", ge=1, le=250),
-            ] = 100,
-        ) -> dict:
-            """Search for apps or publishers by name and metadata."""
-
-            params = {
-                "entity_type": entity_type,
-                "term": term,
-                "limit": limit,
-            }
-            raw_data = await self.make_request(
-                f"/v1/{os}/search_entities",
-                params,
-            )
-
-            return self.normalize_result(
-                raw_data,
-                {
-                    "query_term": term,
-                    "entity_type": entity_type,
-                    "platform": os,
-                },
-            )
-
-        @self.tool(
-            mcp,
             name="get_publisher_apps",
             title="Get Publisher Apps",
         )
