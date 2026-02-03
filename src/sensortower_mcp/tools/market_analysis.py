@@ -178,7 +178,12 @@ class MarketAnalysisTools(SensorTowerTool):
                 Field(description="Ad network name"),
             ],
         ) -> dict:
-            """Fetch the rank of a top advertiser or publisher for the given filters."""
+            """Fetch the rank of a top advertiser or publisher for the given filters.
+
+            ⚠️ UNOFFICIAL API: This endpoint is not documented in the official Sensor Tower
+            API documentation. While it currently works, it may be deprecated or changed
+            without notice. Use with caution and consider migrating to official alternatives.
+            """
 
             os_value = validate_os_parameter(os, ["ios", "android", "unified"])
             date_value = validate_date_format(date)
