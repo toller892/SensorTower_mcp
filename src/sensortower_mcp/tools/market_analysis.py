@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Market Analysis API tools for Sensor Tower MCP Server."""
 
+import warnings
 from typing import Annotated, Literal, Optional, Union
 
 from fastmcp import FastMCP
@@ -42,7 +43,18 @@ class MarketAnalysisTools(SensorTowerTool):
                 Field(description="Comma-separated country codes"),
             ] = "US",
         ) -> dict:
-            """Get app store summary statistics."""
+            """Get app store summary statistics.
+
+            ⚠️ TEMPORARILY DISABLED: This endpoint is currently returning 500 Internal
+            Server Error from Sensor Tower's API. This is a server-side issue.
+            Please contact Sensor Tower support or try again later.
+            """
+
+            warnings.warn(
+                "get_store_summary is experiencing API server errors (500). "
+                "Contact Sensor Tower support if this persists.",
+                UserWarning
+            )
 
             os_value = validate_os_parameter(os, ["ios", "android"])
             start_value = validate_date_format(start_date)
