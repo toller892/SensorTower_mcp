@@ -43,7 +43,12 @@ class YourMetricsTools(SensorTowerTool):
             start_date: Annotated[str, Field(description="Start date in YYYY-MM-DD format")],
             end_date: Annotated[str, Field(description="End date in YYYY-MM-DD format")],
         ) -> dict:
-            """Get downloads and revenue sales report for connected apps."""
+            """Get sales reports for connected apps.
+
+            ⚠️ PERMISSION REQUIRED: This endpoint requires special API authorization.
+            If you receive a 401 Unauthorized error, your API key does not have
+            access to this feature. Contact Sensor Tower support to request access.
+            """
 
             params = {
                 "app_ids": app_ids,
