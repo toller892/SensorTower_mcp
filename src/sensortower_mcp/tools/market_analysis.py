@@ -117,7 +117,12 @@ class MarketAnalysisTools(SensorTowerTool):
                 Field(description="Page number", ge=1),
             ] = 1,
         ) -> dict:
-            """Fetch Share of Voice for top advertisers or publishers."""
+            """Fetch Share of Voice for top advertisers or publishers.
+
+            ⚠️ UNOFFICIAL API: This endpoint is not documented in the official Sensor Tower
+            API documentation. While it currently works, it may be deprecated or changed
+            without notice. Use with caution and consider migrating to official alternatives.
+            """
 
             os_value = validate_os_parameter(os, ["ios", "android", "unified"])
             date_value = validate_date_format(date)
